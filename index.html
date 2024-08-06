@@ -19,13 +19,21 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-width: 400px;
+            width: 100%;
         }
         input, button {
             margin: 10px 0;
-            padding: 5px;
+            padding: 10px;
+            width: 100%;
+            box-sizing: border-box;
         }
         #result {
             margin-top: 20px;
+        }
+        .error {
+            color: red;
+            font-size: 0.9em;
         }
     </style>
 </head>
@@ -33,8 +41,9 @@
     <div class="container">
         <h1>支票金額轉換器</h1>
         <label for="amount">輸入金額：</label>
-        <input type="number" id="amount" placeholder="輸入金額" step="0.01" min="0" max="999999999999.99">
-        <button onclick="convertAmount()">轉換</button>
+        <input type="number" id="amount" placeholder="輸入金額" step="0.01" min="0" max="999999999999.99" required>
+        <div id="error" class="error"></div>
+        <button onclick="convertAmount()" aria-label="轉換金額">轉換</button>
         <div id="result" aria-live="polite"></div>
     </div>
 
@@ -44,11 +53,16 @@
         const positions = Object.freeze(['', '拾', '佰', '仟']);
 
         const convertAmount = () => {
-            const amount = parseFloat(document.getElementById('amount')?.value ?? '0');
-            if (isNaN(amount) || amount < 0 || amount > 999999999999.99) {
-                alert('請輸入有效的金額（0-999,999,999,999.99）');
+            const amountInput = document.getElementById('amount');
+            const amount = parseFloat(amountInput.value);
+            const errorElement = document.getElementById('error');
+            
+            if (isNaN(amount) || amount < 0 || amount > 999_999_999_999.99) {
+                errorElement.textContent = '請輸入有效的金額（0-999,999,999,999.99）';
                 return;
             }
+
+            errorElement.textContent = '';
 
             const [chineseResult, englishResult] = [numberToChineseWords, numberToEnglishWords]
                 .map(converter => converter(amount));
@@ -139,6 +153,30 @@
                 return [integerPart, centsPart].filter(Boolean).join(' and ') || 'Zero Dollar';
             };
         })();
+
+        const debounce = (func, delay) => {
+            let timeoutId;
+            return (...args) => {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => func(...args), delay);
+            };
+        };
+
+        const validateInput = debounce((event) => {
+            const value = event.target.value;
+            const errorElement = document.getElementById('error');
+            if (value !== '' && (isNaN(value) || parseFloat(value) < 0 || parseFloat(value) > 999_999_999_999.99)) {
+                errorElement.textContent = '請輸入0到999,999,999,999.99之間的數字';
+            } else {
+                errorElement.textContent = '';
+            }
+        }, 300);
+
+        window.onload = () => {
+            const amountInput = document.getElementById('amount');
+            amountInput.focus();
+            amountInput.addEventListener('input', validateInput);
+        };
 
         document.getElementById('amount').addEventListener('keypress', ({ key }) => {
             if (key === 'Enter') convertAmount();
