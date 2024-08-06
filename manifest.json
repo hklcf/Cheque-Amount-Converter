@@ -1,0 +1,21 @@
+{
+  "name": "支票金額轉換器",
+  "short_name": "支票金額轉換器",
+  "description": "將數字金額轉換為中文和英文大寫",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#f0f0f0",
+  "icons": [
+    {
+      "src": "icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
